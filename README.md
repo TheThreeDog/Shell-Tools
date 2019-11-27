@@ -1,4 +1,4 @@
-# Shell-Tools（卧槽，项目名字居然写错了）
+# Shell-Tools
 ubuntu bash下命令行小工具合集，把一些常用的小命令封装了起来，方便随时取用。
 
 # Toollist 工具列表

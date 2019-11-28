@@ -31,7 +31,6 @@ def traversal_path(replace_dir,path):
         if prestr != "" or poststr != "":
             path = "\"{}\"".format(path)
         path = path.replace("$",r"\$")
-        path = path.replace("#",r"\#")
         print(prestr + path + poststr)
         return 
     # 如果这是一个文件夹

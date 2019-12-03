@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import os
 import sys
+import subprocess
 
 prestr=""
 poststr=""
@@ -34,4 +35,32 @@ def traversal_path(replace_dir,path):
             continue
 
 if __name__ == "__main__":
-    traversal_path(os.getcwd(),os.getcwd())
+    if len(sys.argv) > 1:
+        # if len(sys.argv) != 2:
+        #     print("usage : listtypes [-mime | -name] 以mime类型区分文件或者以后缀名区分文件")
+        #     exit(0)
+        if sys.argv[1] == "-name":      # 按后缀名统计
+            traversal_path(os.getcwd(),os.getcwd())
+        else:
+            if sys.argv[1] == "-files":
+                output = subprocess.getoutput("generate \"\" \"\" 1 1  | xargs file --mime-type").split("\n")
+                for file_name in output:
+                    # print(file_name)
+                    if sys.argv[2] in file_name:
+                        print("\""+"".join(file_name.split(":")[0]).strip()+"\"")
+                exit(0)
+            output = subprocess.getoutput("generate \"\" \"\" 1 1  | xargs file --mime-type | awk '{print $NF}'")
+            types = list(set(output.split("\n"))) # list转set去重
+            if sys.argv[1] == "-mime":    # 按mime类型统计
+                print("\n".join(types))
+            elif sys.argv[1] == "-nmime":   # 按mime类型统计并打印文件个数
+                type_dict = {}
+                for file_type in types:
+                    type_dict[file_type] = output.count(file_type)
+                for i in type_dict.items():
+                    print("%-6s  :  %s" % (i[1],i[0]))
+
+    else: # 不带参数默认为-name
+        traversal_path(os.getcwd(),os.getcwd())
+
+

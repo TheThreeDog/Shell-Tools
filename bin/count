@@ -18,7 +18,7 @@ def funCount(dirName):
             try :
                 ext = f[f.rindex('.'):]
                 if(extens.count(ext) > 0):
-                    print 'support' 
+                    print 'support'
                     filesCount += 1
                     print fname
                     l_count = len(open(fname).readlines())

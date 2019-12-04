@@ -27,6 +27,10 @@ ubuntu bash下命令行小工具合集，把一些常用的小命令封装了起
 
 ## listtypes
 - 功能：遍历输出当前目录下包含的所有文件类型（包括子目录）
-- 使用方法：直接执行`listtypes`
+- 使用方法：直接执行`listtypes` 参数：
+    - `-name`: 默认，列出当前目录下所有的后缀名类型
+    - `-mime`: 列出当前目录下包含的所有mimetype类型
+    - `-nmime`: 列出包含的所有mimetype类型并且输出每种类型包含的文件数量
+    - `-files [xxx]`: 输出类型为xxx的所有文件
 - 类型：Python脚本
 - 开发语言：Python3

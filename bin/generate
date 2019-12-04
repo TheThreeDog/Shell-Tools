@@ -6,6 +6,8 @@ prestr=""
 poststr=""
 use_real_path = False
 use_quotation = False
+replace_doller = False
+
 
 def traversal_path(replace_dir,path):
     '''
@@ -19,7 +21,8 @@ def traversal_path(replace_dir,path):
             path = os.path.join("" , os.getcwd()+path)
         if use_quotation:
             path = "\"{}\"".format(path)
-        path = path.replace("$",r"\$") # 传递给file命令时不处理$符号
+        if replace_doller:
+            path = path.replace("$",r"\$") # 传递给file命令时不处理$符号
         print(prestr + path + poststr)
         return 
     # 如果这是一个文件夹
@@ -32,14 +35,16 @@ def traversal_path(replace_dir,path):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        if len(sys.argv) != 5:
-            print("usage : generate [prestr] [poststr] [0|1] [0|1] ")
-            exit(0)
+        # if len(sys.argv) != 5:
+        #     print("usage : generate [prestr] [poststr] [0|1] [0|1] ")
+        #     exit(0)
         prestr = sys.argv[1]
         poststr = sys.argv[2]
         if sys.argv[3] == "1":
             use_real_path = True
         if sys.argv[4] == "1":
             use_quotation = True
+        if "doller" in sys.argv:
+            replace_doller = True
 
     traversal_path(os.getcwd(),os.getcwd())

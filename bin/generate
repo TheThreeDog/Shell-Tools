@@ -2,6 +2,33 @@
 import os
 import sys
 
+helpstr = """
+用法: generate [prestr] [poststr] [-选项....]
+
+不带任何参数的情况：直接输出当前目录下所有文件相对路径，以/开头。结合prestr和poststr可以批量生成命令等操作
+
+参数：
+prestr                             输出的路径前追加的字符串
+postsstr                           输出的路径后追加的字符串
+
+选项：
+-a, --all                          相当于 -q -d -r 
+-r, --realpath                     显示所有文件的全路径，（默认为相对路径）
+-d, --doller                       处理路径中的$符号，替换为\$
+-q, --quotation                    输出的路径用双引号包裹
+
+帮助选项:
+-?,-h,--help                       打印帮助信息
+
+实例：
+生成删除当前路径下所有文件的命令：
+generate "rm -r " -a  或者 generate "rm -r" -q -d -r 
+
+注意：
+generate 后接收两个参数选项以外的字符串作为前置拼接和后置拼接，多余的无法解析的字符串将会报错。
+如果输入参数有误，例如-r 输入成了-R 可能会被直接解析到前置字符串里去。输出的每一行开头都会被加上一个"-R"
+"""
+
 prestr=""
 poststr=""
 use_real_path = False
@@ -18,11 +45,11 @@ def traversal_path(replace_dir,path):
     if not os.path.isdir(real_path):
         # 如果这不是一个文件夹，是个文件 , 直接打印
         if use_real_path:
-            path = os.path.join("" , os.getcwd()+path)
+            path = os.path.join("" , os.getcwd()+path)  # 处理绝对路径还是相对路径
         if use_quotation:
-            path = "\"{}\"".format(path)
+            path = "\"{}\"".format(path)                # 处理是否在路径前后加上引号
         if replace_doller:
-            path = path.replace("$",r"\$") # 传递给file命令时不处理$符号
+            path = path.replace("$",r"\$")              # 处理路径名中的doller符号
         print(prestr + path + poststr)
         return 
     # 如果这是一个文件夹
@@ -31,20 +58,48 @@ def traversal_path(replace_dir,path):
             traversal_path(replace_dir,os.path.join(real_path,file_name))
         except PermissionError:
             continue
-    # 最后通过列表返回所有的文件内容
+
+def take_arg(): # 提取参数，从命令行参数列表中提取第一个非控制选项的字符串并返回，提取后参数列表中删掉这个参数。
+    index = 1
+    length = len(sys.argv)
+    while index < length: 
+        if sys.argv[index] not in preargs:
+            break
+        index += 1
+    if index == length:
+        return None
+    return sys.argv.pop(index)
+
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        # if len(sys.argv) != 5:
-        #     print("usage : generate [prestr] [poststr] [0|1] [0|1] ")
-        #     exit(0)
-        prestr = sys.argv[1]
-        poststr = sys.argv[2]
-        if sys.argv[3] == "1":
-            use_real_path = True
-        if sys.argv[4] == "1":
-            use_quotation = True
-        if "doller" in sys.argv:
-            replace_doller = True
+    preargs = ["--realpath","-r","--quotation","-q","--doller","-d","--all","-a","--help","-h","-?"]
+    if len(sys.argv) != 1: 
+        if "--help" in sys.argv or "-h" in sys.argv or "-?" in sys.argv:
+            print(helpstr)
+            exit(0)
+        
+        first = take_arg()
+        second = take_arg()
+        prestr = "" if first is None else first
+        poststr = "" if second is None else second
 
+        # 如果还有多余的参数
+        extra_arg = take_arg()
+        if extra_arg is not None and extra_arg not in preargs:
+            print("未知参数：",extra_arg)
+            exit(0)
+        
+
+        if "--realpath" in sys.argv or "-r" in sys.argv:
+            use_real_path = True
+        if "--quotation" in sys.argv or "-q" in sys.argv:
+            use_quotation = True
+        if "--doller" in sys.argv or "-d" in sys.argv:
+            replace_doller = True
+        if "--all" in sys.argv or "-a" in sys.argv:
+            replace_doller = True
+            use_quotation = True
+            use_real_path = True
+
+    # 如果没有参数会直接执行这里。
     traversal_path(os.getcwd(),os.getcwd())

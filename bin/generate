@@ -2,7 +2,7 @@
 import os
 import sys
 
-helpstr = """
+helpstr = r"""
 用法: generate [prestr] [poststr] [-选项....]
 
 不带任何参数的情况：直接输出当前目录下所有文件相对路径，以/开头。结合prestr和poststr可以批量生成命令等操作

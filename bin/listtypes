@@ -3,7 +3,7 @@ import os
 import sys
 import subprocess
 
-helpstr = """
+helpstr = r"""
 用法: listtypes [-选项] 列出当前目录包含的文件的类型
 
 不带任何参数的情况：递归输出所有文件，格式是`文件：类型`，可以通过grep筛选出指定类型的所有文件。

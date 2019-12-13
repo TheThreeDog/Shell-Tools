@@ -3,6 +3,26 @@ import os
 import sys
 import subprocess
 
+helpstr = """
+用法: listtypes [-选项] 列出当前目录包含的文件的类型
+
+不带任何参数的情况：递归输出所有文件，格式是`文件：类型`，可以通过grep筛选出指定类型的所有文件。
+
+选项：
+-mime                              输出当前目录下包含的所有文件类型（mime类型）
+-name                              输出当前目录下包含的所有文件类型（后缀名）
+-nmime                             输出当前目录下包含的所有文件类型 并打印每种类型的数量（mime类型）
+-nname                             输出当前目录下包含的所有文件类型 并打印每种类型的数量（后缀名）
+
+帮助选项:
+-?,-h,--help                       打印帮助信息
+
+注意：
+1. 此命令依赖于generate，请确保系统的环境变量里有generate命令
+"""
+
+
+
 prestr=""
 poststr=""
 typelist = []
@@ -14,7 +34,7 @@ def traversal_path(replace_dir,path):
     '''
     real_path = path  # 绝对路径
     path = path.replace(replace_dir,"") # 相对路径
-    if not os.path.isdir(real_path):
+    if not os.path.isdir(real_path) or os.path.islink(real_path):
         file_name = os.path.split(real_path)[1]
         if r"." not in file_name:   # 如果文件没有后缀名
             return
@@ -23,44 +43,72 @@ def traversal_path(replace_dir,path):
         file_type = file_name.split(".")[-1]
         if file_type.isdigit():     # 如果最后一位是数字的话，（例如什么libQtCore.so.2.10.1）
             return
-        if file_type not in typelist:
-            typelist.append(file_type)
-            print(file_type)
+        typelist.append(file_type)
         return 
     # 如果这是一个文件夹
     for file_name in os.listdir(real_path): # 递归查找
         try:
             traversal_path(replace_dir,os.path.join(real_path,file_name))
         except PermissionError:
+            print("无权限访问路径：",real_path)
             continue
 
 if __name__ == "__main__":
+    ok = False
+    for path in os.environ["PATH"].split(":"):
+        if os.path.exists(os.path.join(path,"generate")):
+            ok = True
+            break
+    if not ok:
+        print("此命令依赖于generate。系统中缺少generate命令，请将generate文件放在系统环境变量PATH目录下")
+        exit(0)
+
     if len(sys.argv) > 1:
-        # if len(sys.argv) != 2:
-        #     print("usage : listtypes [-mime | -name] 以mime类型区分文件或者以后缀名区分文件")
-        #     exit(0)
-        if sys.argv[1] == "-name":      # 按后缀名统计
+        if len(sys.argv) != 2:
+            print("usage : listtypes [-mime | -name | -nmime | -nname] 以mime类型区分文件或者以后缀名区分文件")
+            exit(0)
+        if sys.argv[1].strip() in ["-h","-?","--help"]:
+            print(helpstr)
+            exit(0)
+        
+        if "name" in sys.argv[1]:                  # 按后缀名统计
             traversal_path(os.getcwd(),os.getcwd())
-        else:
-            if sys.argv[1] == "-files":
-                output = subprocess.getoutput("generate \"\" \"\" 1 1  | xargs file --mime-type").split("\n")
-                for file_name in output:
-                    # print(file_name)
-                    if sys.argv[2] in file_name:
-                        print("\""+"".join(file_name.split(":")[0]).strip()+"\"")
-                exit(0)
-            output = subprocess.getoutput("generate \"\" \"\" 1 1  | xargs file --mime-type | awk '{print $NF}'")
-            types = list(set(output.split("\n"))) # list转set去重
-            if sys.argv[1] == "-mime":    # 按mime类型统计
+            types = list(set(typelist))
+            if sys.argv[1] == "-name":
                 print("\n".join(types))
-            elif sys.argv[1] == "-nmime":   # 按mime类型统计并打印文件个数
+            elif sys.argv[1] == "-nname":               #按后缀名统计并打印数量
+                type_dict = {}
+                for file_type in types:
+                    type_dict[file_type] = typelist.count(file_type)
+                for i in type_dict.items():
+                    print("%-6s  :  %s" % (i[1],i[0]))
+            else :
+                print("无法解析的参数")
+                print("usage : listtypes [-mime | -name | -nmime | -nname] 以mime类型区分文件或者以后缀名区分文件")
+                exit(0)
+        elif "mime" in sys.argv[1]:
+            output = subprocess.getoutput("generate -r -q  | xargs file --mime-type | awk '{print $NF}'")
+            types = list(set(output.split("\n")))   # list转set去重
+            if sys.argv[1] == "-mime":              # 按mime类型统计
+                print("\n".join(types))
+            elif sys.argv[1] == "-nmime":           # 按mime类型统计并打印文件个数
                 type_dict = {}
                 for file_type in types:
                     type_dict[file_type] = output.count(file_type)
                 for i in type_dict.items():
                     print("%-6s  :  %s" % (i[1],i[0]))
+            else :
+                print("无法解析的参数")
+                print("usage : listtypes [-mime | -name | -nmime | -nname] 以mime类型区分文件或者以后缀名区分文件")
+                exit(0)
+        else :
+            print("无法解析的参数")
+            print("usage : listtypes [-mime | -name | -nmime | -nname] 以mime类型区分文件或者以后缀名区分文件")
+            exit(0)
 
-    else: # 不带参数默认为-name
-        traversal_path(os.getcwd(),os.getcwd())
+    else: # 不带参数 列出所有文件和mime类型
+        output = subprocess.getoutput("generate -r -q  | xargs file --mime-type").split("\n")
+        print("\n".join(output))
+        exit(0)
 
 

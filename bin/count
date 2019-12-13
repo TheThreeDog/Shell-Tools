@@ -6,7 +6,7 @@
 '''
 import sys,os
 
-extens = [".c",".cpp",".hpp",".h",".css",'.js','.html','.go']
+extens = [".c",".cpp",".hpp",".h",".go"]
 linesCount = 0
 filesCount = 0
 
@@ -26,8 +26,8 @@ def funCount(dirName):
                     linesCount += l_count
                 else:
                     print ext," : not support"
-            except:
-                print "Error occur!"
+            except Exception as e :
+                print "Error occur! : ",e
                 pass
 
 

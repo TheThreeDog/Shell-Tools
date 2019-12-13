@@ -1,9 +1,0 @@
-#!/usr/bin/python3
-# echo \"$@\"
-import sys
-import os
-if __name__ == "__main__":
-    for p in sys.argv[1:]:
-        fullpath = p.replace(os.getcwd(),"")
-        path = os.path.split(fullpath)[0]
-        print("mkdir -p \"../data3{}\" && mv -v \".{}\" \"../data3{}\"".format(path,fullpath,fullpath))

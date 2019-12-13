@@ -25,8 +25,10 @@ postsstr                           输出的路径后追加的字符串
 generate "rm -r " -a  或者 generate "rm -r" -q -d -r 
 
 注意：
-generate 后接收两个参数选项以外的字符串作为前置拼接和后置拼接，多余的无法解析的字符串将会报错。
-如果输入参数有误，例如-r 输入成了-R 可能会被直接解析到前置字符串里去。输出的每一行开头都会被加上一个"-R"
+1. generate 后接收两个参数选项以外的字符串作为前置拼接和后置拼接，多余的无法解析的字符串将会报错。
+2. 如果输入参数有误，例如-r 输入成了-R 可能会被直接解析到前置字符串里去。输出的每一行开头都会被加上一个"-R"
+3. 不带参数的generage，输出相当于find .  但是find . 会包含目录和文件， generate只包含文件
+
 """
 
 prestr=""
@@ -42,7 +44,7 @@ def traversal_path(replace_dir,path):
     '''
     real_path = path  # 绝对路径
     path = path.replace(replace_dir,"") # 相对路径
-    if not os.path.isdir(real_path):
+    if not os.path.isdir(real_path) or os.path.islink(real_path): #不是文件夹，或者是软连接， 防止软连接链接本目录造成递归
         # 如果这不是一个文件夹，是个文件 , 直接打印
         if use_real_path:
             path = os.path.join("" , os.getcwd()+path)  # 处理绝对路径还是相对路径
@@ -57,6 +59,7 @@ def traversal_path(replace_dir,path):
         try:
             traversal_path(replace_dir,os.path.join(real_path,file_name))
         except PermissionError:
+            print("无权限访问路径：",real_path)
             continue
 
 def take_arg(): # 提取参数，从命令行参数列表中提取第一个非控制选项的字符串并返回，提取后参数列表中删掉这个参数。

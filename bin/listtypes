@@ -107,7 +107,7 @@ if __name__ == "__main__":
             exit(0)
 
     else: # 不带参数 列出所有文件和mime类型
-        output = subprocess.getoutput("generate -r -q  | xargs file --mime-type").split("\n")
+        output = subprocess.getoutput("generate -R -q  | xargs file --mime-type").split("\n")
         print("\n".join(output))
         exit(0)
 

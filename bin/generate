@@ -16,6 +16,7 @@ postsstr                           输出的路径后追加的字符串
 -r, --realpath                     显示所有文件的全路径，（默认为相对路径）
 -d, --doller                       处理路径中的$符号，替换为\$
 -q, --quotation                    输出的路径用双引号包裹
+-R, --relative                     相对路径，输出的路径前，加.
 
 帮助选项:
 -?,-h,--help                       打印帮助信息
@@ -35,6 +36,7 @@ prestr=""
 poststr=""
 use_real_path = False
 use_quotation = False
+use_relative = False
 replace_doller = False
 
 
@@ -48,6 +50,8 @@ def traversal_path(replace_dir,path):
         # 如果这不是一个文件夹，是个文件 , 直接打印
         if use_real_path:
             path = os.path.join("" , os.getcwd()+path)  # 处理绝对路径还是相对路径
+        elif use_relative:
+            path = "."+path                             # 处理成相对路径，前面加上.
         if use_quotation:
             path = "\"{}\"".format(path)                # 处理是否在路径前后加上引号
         if replace_doller:
@@ -75,7 +79,7 @@ def take_arg(): # 提取参数，从命令行参数列表中提取第一个非�
 
 
 if __name__ == "__main__":
-    preargs = ["--realpath","-r","--quotation","-q","--doller","-d","--all","-a","--help","-h","-?"]
+    preargs = ["--realpath","-r","--quotation","-q","--doller","-d","--all","-a","--help","-h","-?","-R","--relative"]
     if len(sys.argv) != 1: 
         if "--help" in sys.argv or "-h" in sys.argv or "-?" in sys.argv:
             print(helpstr)
@@ -99,10 +103,13 @@ if __name__ == "__main__":
             use_quotation = True
         if "--doller" in sys.argv or "-d" in sys.argv:
             replace_doller = True
+        if "--relative" in sys.argv or "-R" in sys.argv:
+            use_relative = True
         if "--all" in sys.argv or "-a" in sys.argv:
             replace_doller = True
             use_quotation = True
             use_real_path = True
+            use_relative = True
 
     # 如果没有参数会直接执行这里。
     traversal_path(os.getcwd(),os.getcwd())

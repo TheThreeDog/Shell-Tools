@@ -19,11 +19,11 @@ int main (int argc, char **argv){
 
   ofstream output_file(argv[1],ios::trunc);
   if(argc < 2){
-    cerr << "arguement error: 命令mkcpp需要包含一个参数 " << endl;
+    cerr << "arguement error: 命令mkc需要包含一个参数 " << endl;
     return 1;
   }
   else if(argc > 2){
-    cerr << "arguement error: 命令mkcpp只能包含一个参数 " << endl;
+    cerr << "arguement error: 命令mkc只能包含一个参数 " << endl;
     return 1;
   }
 

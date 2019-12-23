@@ -1,10 +1,10 @@
 /**************************************************************
- * File Name   : mkgo.go
- * Author      : ThreeDog
- * Date        : Mon Dec 23 17:09:13 2019
- * Description : 生成一个golang的基本文件
- *
- **************************************************************/
+* File Name   : mkcpp.go
+* Author      : ThreeDog
+* Date        : 2019-12-23 20:02:00
+* Description : 
+*
+**************************************************************/
 
 package main
 
@@ -39,7 +39,7 @@ func checkErr(err error){
 func main()  {
 	// 命令行参数获取
 	if len(os.Args) != 2 {
-		fmt.Printf("arguement error: 命令mkgo需要有且只有一个参数 \n")
+		fmt.Printf("arguement error: 命令mkc需要有且只有一个参数 \n")
 		return 
 	}
 	
@@ -64,12 +64,11 @@ func main()  {
 	buffer.WriteString("* Description : \n")
 	buffer.WriteString("*\n")
 	buffer.WriteString("**************************************************************/\n\n")
-	buffer.WriteString("package main\n\n")
-	buffer.WriteString("import (\n")
-	buffer.WriteString("\t\"fmt\"\n")
-	buffer.WriteString(")\n\n")
-	buffer.WriteString("func main()  {\n")
-	buffer.WriteString("\tfmt.Printf(\"hello world\\n\")\n")
+	buffer.WriteString("#include <iostream>\n\n")
+	buffer.WriteString("using namespace std;\n\n")
+	buffer.WriteString("int main (int argc , char** argv)\n")
+	buffer.WriteString("{\n")
+	buffer.WriteString("\treturn 0;\n")
 	buffer.WriteString("}\n")
 
 	file.Write([]byte(buffer.String()))

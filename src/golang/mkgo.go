@@ -46,9 +46,16 @@ func main()  {
 	res,_ := PathExists(os.Args[1])
 	// 如果文件已经存在，替换一下文件名 
 	if res {
-		err := os.Rename(os.Args[1],os.Args[1]+".bak")
-		if err != nil{
-			fmt.Printf("文件%q已存在，将文件重命名为%q.bak时失败 \n",os.Args[1],os.Args[1])
+		fmt.Printf("文件%s已存在，是否覆盖创建？（旧文件将被重命名为：%s.bak ）Y/N ",os.Args[1],os.Args[1])
+		var ok string
+		fmt.Scanln(&ok)
+		if ok == "Y"{
+			err := os.Rename(os.Args[1],os.Args[1]+".bak")
+			if err != nil{
+				fmt.Printf("文件%q已存在，将文件重命名为%q.bak时失败 \n",os.Args[1],os.Args[1])
+				return 
+			}
+		}else{
 			return 
 		}
 	}

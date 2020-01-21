@@ -2,6 +2,21 @@
 import sys
 import os
 
+support = {     # 后缀名：单行注释，[多行注释开头，多行注释结尾]
+    "c":["//",["/*","*/"]],
+    "cpp":["//",["/*","*/"]],
+    "h":["//",["/*","*/"]],
+    "hpp":["//",["/*","*/"]],
+    "python":["#",["'''","'''"]],
+    "py":["#",["'''","'''"]],
+    "php":["//",["/*","*/"]],
+    "js":["//",["/*","*/"]],
+    "go":["//",["/*","*/"]]
+}
+
+
+
+
 def comments(path, simpleLine,multiLine):
     """
     C / C++ / Java / PHP / JavaScript / python / golang
@@ -11,54 +26,58 @@ def comments(path, simpleLine,multiLine):
     :param multiLine:
     :return:
     """
-    simpleLine = "#"
-    multiLine = ["/*","*/"]
+    # simpleLine = "#"
+    # multiLine = ["/*","*/"]
     in_multi_comment = False  # 多行注释符标识符号
     comments = 0
     blanks = 0
     codes = 0
     count = 0
-    with open(path, encoding="utf-8") as f:
-        for line in f.readlines():
-            count += 1
-            line = line.strip()
-
-            # 多行注释中的空行当做注释处理
-            if line == "" and not in_multi_comment:
-                blanks += 1
-            # 注释有4种
-            # 1. # 井号开头的单行注释
-            # 2. 多行注释符在同一行的情况
-            # 3. 多行注释符之间的行
-            elif line.startswith(simpleLine) or \
-                            (line.startswith(multiLine[0]) and line.endswith(multiLine[1]) and len(line)) > 3 or \
-                    (in_multi_comment and not (line.startswith(multiLine[0]) or line.startswith(multiLine[1]))):
-                comments += 1
-            # 4. 多行注释符的开始行和结束行
-            elif line.startswith(multiLine[0]) or line.startswith(multiLine[1]):
-                in_multi_comment = not in_multi_comment
-                comments += 1
-            else:
-                codes += 1
-    percentage = comments/codes
-    return {"comments": comments, "blanks": blanks, "codes": codes,"percentage":"{:.2%}".format(percentage), "count": count}
-
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f.readlines():
+                count += 1
+                line = line.strip()
+                # 多行注释中的空行当做注释处理
+                if line == "" and not in_multi_comment:
+                    blanks += 1
+                # 注释有4种
+                # 1. # 井号开头的单行注释
+                # 2. 多行注释符在同一行的情况
+                # 3. 多行注释符之间的行
+                elif line.startswith(simpleLine) or  (line.startswith(multiLine[0]) and line.endswith(multiLine[1]) and len(line)) > 3 or (in_multi_comment and not (line.startswith(multiLine[0]) or line.startswith(multiLine[1]))):
+                    comments += 1
+                    if line.endswith(multiLine[1]):
+                        in_multi_comment = not in_multi_comment
+                # 4. 多行注释符的开始行和结束行
+                elif line.startswith(multiLine[0]) or line.startswith(multiLine[1]):
+                    in_multi_comment = not in_multi_comment
+                    comments += 1
+                else:
+                    codes += 1
+        return {"comments": comments, "blanks": blanks, "codes": codes, "count": count}
+    except UnicodeDecodeError as e:
+        print(path," can not be solve")
+        return {"comments": 0, "blanks": 0, "codes": 0, "count": 0}
 
 def traversal_path(replace_dir,path):
     '''
     遍历文件夹，返回一个列表，列表中存放所有遍历出的文件的全路径
     '''
+    global res_list
     real_path = path  # 绝对路径
     path = path.replace(replace_dir,"") # 相对路径
     if not os.path.isdir(real_path) or os.path.islink(real_path):
         file_name = os.path.split(real_path)[1]
         if r"." not in file_name:   # 如果文件没有后缀名
             return
-        # if os.path.islink(real_path):   # 如果文件是个软连接
-        #     return 
+        if os.path.islink(real_path):   # 如果文件是个软连接
+            return 
         file_type = file_name.split(".")[-1]
         if file_type.isdigit():     # 如果最后一位是数字的话，（例如什么libQtCore.so.2.10.1）
             return
+        if file_type in support:
+            res_list.append(comments(real_path,*support[file_type]))
         return 
     # 如果这是一个文件夹
     for file_name in os.listdir(real_path): # 递归查找
@@ -69,7 +88,25 @@ def traversal_path(replace_dir,path):
             continue
 
 if __name__ == "__main__":
-    traversal_path(os.getcwd(),os.getcwd())
-    
-    res = comments(sys.argv[1],"","")
-    print(res)
+    res_list = []
+    if len(sys.argv) == 1:
+        traversal_path(os.getcwd(),os.getcwd())
+    else:
+        traversal_path(sys.argv[1],sys.argv[1])
+
+    total_codes = sum([x['codes'] for x in res_list ])
+    total_lines = sum([x['count'] for x in res_list ])
+    total_comments = sum([x['comments'] for x in res_list ])
+    total_blank = sum([x['blanks'] for x in res_list])
+
+    if total_codes == 0 : 
+        percentage = 0
+    else :
+        percentage = "{:.2%}".format(total_comments/total_codes)
+
+    print("File counts: ",len(res_list))
+    print("Line counts: ",total_lines)
+    print("Code counts: ",total_codes)
+    print("Blank counts: ",total_blank)
+    print("Comment counts: ",total_comments)
+    print("Percentage: ",percentage)
